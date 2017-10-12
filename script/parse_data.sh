@@ -1,0 +1,1 @@
+python3.6 python/data_parser.py
