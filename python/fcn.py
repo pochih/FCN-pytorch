@@ -204,19 +204,20 @@ def make_layers(cfg, batch_norm=False):
 
 
 if __name__ == "__main__":
-    # test for the size
+    batch_size, n_class, h, w = 10, 20, 160, 160
+
+    # test output size
     vgg_model = VGGNet(requires_grad=True)
-    batch_size, n_class = 10, 20
     input = torch.autograd.Variable(torch.randn(batch_size, 3, 224, 224))
     output = vgg_model(input)
     assert output['x5'].size() == torch.Size([batch_size, 512, 7, 7])
 
     # test a random batch, loss should decrease
     fcn_model = FCNs(pretrained_net=vgg_model, classes=n_class)
-    criterion = nn.MSELoss()
+    criterion = nn.BCELoss()
     optimizer = optim.SGD(fcn_model.parameters(), lr=1e-3, momentum=0.9)
-    input = torch.autograd.Variable(torch.randn(batch_size, 3, 160, 160))
-    y = torch.autograd.Variable(torch.randn(batch_size, n_class*160*160), requires_grad=False)
+    input = torch.autograd.Variable(torch.randn(batch_size, 3, h, w))
+    y = torch.autograd.Variable(torch.randn(batch_size, n_class*h*w), requires_grad=False)
     for iter in range(10):
         optimizer.zero_grad()
         output = fcn_model(input)

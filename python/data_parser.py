@@ -8,16 +8,18 @@ import scipy.misc
 import os
 
 
-###########################
-# global variables #
-###########################
-data_dir = "CamVid/"
-test_data_dir = os.path.join(data_dir, "LabeledApproved_full")
-label_colors_file = os.path.join(data_dir, "label_colorsSorted.txt")
+#############################
+    # global variables #
+#############################
+# load CamVid data
+root_dir          = "CamVid/"
+label_dir         = os.path.join(root_dir, "LabeledApproved_full")  # train label
+label_colors_file = os.path.join(root_dir, "label_colors.txt")      # color to label
 
-test_data_idx_dir = os.path.join(data_dir, "Labeled_idx")
-if not os.path.exists(test_data_idx_dir):
-    os.makedirs(test_data_idx_dir)
+# create dir for label index
+label_idx_dir = os.path.join(root_dir, "Labeled_idx")
+if not os.path.exists(label_idx_dir):
+    os.makedirs(label_idx_dir)
 
 label2color = {}
 color2label = {}
@@ -25,6 +27,7 @@ label2index = {}
 index2label = {}
 
 
+'''debug function'''
 def imshow(img, title=None):
     try:
         img = mpimg.imread(img)
@@ -39,10 +42,11 @@ def imshow(img, title=None):
 
 
 if __name__ == '__main__':
-    f = open(label_colors_file, "r").read().split("\n")
+    f = open(label_colors_file, "r").read().split("\n")[:-1]  # ignore the last empty line
     for idx, line in enumerate(f):
-        label = line.split()[0]
-        color = tuple([int(x) for x in line.split()[1:]])
+        label = line.split()[-1]
+        color = tuple([int(x) for x in line.split()[:-1]])
+        print(label, color)
         label2color[label] = color
         color2label[color] = label
         label2index[label] = idx
@@ -53,12 +57,13 @@ if __name__ == '__main__':
         # rgb[..., 2] = color[2]
         # imshow(rgb, title=label)
     
-    for i in os.listdir(test_data_dir):
-        filename = os.path.join(test_data_idx_dir, i)
+    for idx, name in enumerate(os.listdir(label_dir)):
+        filename = os.path.join(label_idx_dir, name)
         if os.path.exists(filename + '.npy'):
+            print("Skip %s" % (name))
             continue
-        print("Parse %s" % (i))
-        img = os.path.join(test_data_dir, i)
+        print("Parse %s" % (name))
+        img = os.path.join(label_dir, name)
         img = scipy.misc.imread(img, mode='RGB')
         height, weight, _ = img.shape
     
@@ -71,18 +76,17 @@ if __name__ == '__main__':
                     index = label2index[label]
                     idx_mat[h, w] = index
                 except:
-                    print("error: img:%s, h:%d, w:%d" % (i, h, w))
+                    print("error: img:%s, h:%d, w:%d" % (name, h, w))
         np.save(filename, idx_mat)
-        print("Finish %s" % (i))
+        print("Finish %s" % (name))
     
-    img = os.path.join(test_data_dir, os.listdir(test_data_dir)[0])
+    img = os.path.join(label_dir, os.listdir(label_dir)[0])
     img = scipy.misc.imread(img, mode='RGB')
-    print(img.shape)
+    print('img.shape =', img.shape)
     
     test_cases = [(555, 405), (0, 0), (380, 645), (577, 943)]
-    for t in test_cases:
-        index = img[t]
-        print(index, color2label[tuple(index)])
-    
-    imshow(img)
+    test_ans   = ['Car', 'Building', 'Truck_Bus', 'Car']
+    for idx, t in enumerate(test_cases):
+        color = img[t]
+        assert color2label[tuple(color)] == test_ans[idx]
 
