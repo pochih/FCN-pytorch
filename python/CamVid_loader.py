@@ -3,8 +3,10 @@
 from __future__ import print_function
 
 from matplotlib import pyplot as plt
+import pandas as pd
 import numpy as np
 import scipy.misc
+import random
 import os
 
 import torch
@@ -12,39 +14,57 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
 
 
-root_dir          = "CamVid/"
-data_dir          = os.path.join(root_dir, "701_StillsRaw_full")  # train data
-label_idx_dir     = os.path.join(root_dir, "Labeled_idx")         # train label (transform to class index)
+root_dir   = "CamVid/"
+train_file = os.path.join(root_dir, "train.csv")  # img_name & label_name
 
-means = (.5, .6, .7)
-stds  = (2., 3., 4.)
+num_class = 32
+means     = (0.4368, 0.2475, 0.3281)
+stds      = (0.1681, 0.2247, 0.2743)
+h, w      = 720, 960
+crop_h    = int(int(h) / 32 * 32 * 2 / 3)
+crop_w    = int(int(w) / 32 * 32 * 2 / 3)
 
 
 class CamVidDataset(Dataset):
 
-    def __init__(self, data_dir, label_idx_dir, n_class=32):
-        self.data      = [os.path.join(data_dir, d) for d in os.listdir(data_dir)]  # list of filename with type .png
-        self.label     = [os.path.join(label_idx_dir, l) for l in os.listdir(label_idx_dir)]  # list of filename with type .npy
+    def __init__(self, csv_file, n_class=num_class, crop=True, flip_rate=0.5):
+        self.data      = pd.read_csv(csv_file)
         self.means     = means  # mean of three channels after divide to 255
         self.stds      = stds   # std of three channels after divide to 255
         self.n_class   = n_class
+
+        self.crop      = crop
+        self.crop_h    = crop_h
+        self.crop_w    = crop_w
+        self.flip_rate = flip_rate
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        img_name   = self.data[idx]
+        img_name   = self.data.ix[idx, 0]
         img        = scipy.misc.imread(img_name, mode='RGB')
-        label_name = self.label[idx]
+        label_name = self.data.ix[idx, 1]
         label      = np.load(label_name)
+
+        if self.crop:
+            h, w, _ = img.shape
+            top   = np.random.randint(0, h - self.crop_h)
+            left  = np.random.randint(0, w - self.crop_w)
+            img   = img[top:top + self.crop_h, left:left + self.crop_w]
+            label = label[top:top + self.crop_h, left:left + self.crop_w]
+
+        if random.random() < self.flip_rate:
+            img   = np.fliplr(img)
+            label = np.fliplr(label)
 
         # convert to tensors
         h, w, _ = img.shape
-        img = torch.from_numpy(img).permute(2, 0, 1).float().div(255)
+        img = torch.from_numpy(img.copy()).permute(2, 0, 1).float().div(255)
         img[0].sub_(self.means[0]).div_(self.stds[0])
         img[1].sub_(self.means[1]).div_(self.stds[1])
         img[2].sub_(self.means[2]).div_(self.stds[2])
-        label = torch.from_numpy(label).long()
+        label = torch.from_numpy(label.copy()).long()
 
         # create one-hot encoding
         target = torch.zeros(self.n_class, h, w)
@@ -70,13 +90,13 @@ def show_batch(batch):
 
 
 if __name__ == "__main__":
-    train_data = CamVidDataset(data_dir, label_idx_dir)
+    train_data = CamVidDataset(csv_file=train_file)
 
     # show a batch
     batch_size = 4
     for i in range(batch_size):
         sample = train_data[i]
-        print(i, sample['X'].size(), sample['Y'].size())  
+        print(i, sample['X'].size(), sample['Y'].size())
 
     dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
 

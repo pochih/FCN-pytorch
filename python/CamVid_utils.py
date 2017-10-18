@@ -5,14 +5,15 @@ from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import scipy.misc
+import random
 import os
 
 
 #############################
     # global variables #
 #############################
-# load CamVid data
 root_dir          = "CamVid/"
+data_dir          = os.path.join(root_dir, "701_StillsRaw_full")    # train data
 label_dir         = os.path.join(root_dir, "LabeledApproved_full")  # train label
 label_colors_file = os.path.join(root_dir, "label_colors.txt")      # color to label
 
@@ -27,21 +28,48 @@ label2index = {}
 index2label = {}
 
 
-'''debug function'''
-def imshow(img, title=None):
-    try:
-        img = mpimg.imread(img)
-        imgplot = plt.imshow(img)
-    except:
-        plt.imshow(img, interpolation='nearest')
+def divide_train_val(val_rate=0.01, shuffle=True, random_seed=None):
+    data_list   = os.listdir(data_dir)
+    data_len    = len(data_list)
+    val_len     = int(data_len * val_rate)
 
-    if title is not None:
-        plt.title(title)
-    
-    plt.show()
+    if random_seed:
+        random.seed(random_seed)
 
+    if shuffle:
+        data_idx = random.sample(range(data_len), data_len)
+    else:
+        data_idx = list(range(data_len))
 
-if __name__ == '__main__':
+    val_idx     = [data_list[i] for i in data_idx[:val_len]]
+    train_idx   = [data_list[i] for i in data_idx[val_len:]]
+
+    # create val.csv
+    val_label_file = os.path.join(root_dir, "val.csv")
+    v = open(val_label_file, "w")
+    v.write("img,label\n")
+    for idx, name in enumerate(val_idx):
+        if 'png' not in name:
+            continue
+        img_name = os.path.join(data_dir, name)
+        lab_name = os.path.join(label_idx_dir, name)
+        lab_name = lab_name.split(".")[0] + "_L.png.npy"
+        v.write("{},{}\n".format(img_name, lab_name))
+
+    # create train.csv
+    train_label_file = os.path.join(root_dir, "train.csv")
+    t = open(train_label_file, "w")
+    t.write("img,label\n")
+    for idx, name in enumerate(train_idx):
+        if 'png' not in name:
+            continue
+        img_name = os.path.join(data_dir, name)
+        lab_name = os.path.join(label_idx_dir, name)
+        lab_name = lab_name.split(".")[0] + "_L.png.npy"
+        t.write("{},{}\n".format(img_name, lab_name))
+
+def parse_label():
+    # change label to class index
     f = open(label_colors_file, "r").read().split("\n")[:-1]  # ignore the last empty line
     for idx, line in enumerate(f):
         label = line.split()[-1]
@@ -79,14 +107,31 @@ if __name__ == '__main__':
                     print("error: img:%s, h:%d, w:%d" % (name, h, w))
         np.save(filename, idx_mat)
         print("Finish %s" % (name))
-    
+
+    # test some pixels' label    
     img = os.path.join(label_dir, os.listdir(label_dir)[0])
-    img = scipy.misc.imread(img, mode='RGB')
-    print('img.shape =', img.shape)
-    
+    img = scipy.misc.imread(img, mode='RGB')   
     test_cases = [(555, 405), (0, 0), (380, 645), (577, 943)]
     test_ans   = ['Car', 'Building', 'Truck_Bus', 'Car']
     for idx, t in enumerate(test_cases):
         color = img[t]
         assert color2label[tuple(color)] == test_ans[idx]
 
+
+'''debug function'''
+def imshow(img, title=None):
+    try:
+        img = mpimg.imread(img)
+        imgplot = plt.imshow(img)
+    except:
+        plt.imshow(img, interpolation='nearest')
+
+    if title is not None:
+        plt.title(title)
+    
+    plt.show()
+
+
+if __name__ == '__main__':
+    divide_train_val()
+    parse_label()
