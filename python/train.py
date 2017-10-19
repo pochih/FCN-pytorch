@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
@@ -15,27 +18,27 @@ import time
 import os
 
 
-root_dir   = "CamVid/"
-train_file = os.path.join(root_dir, "train.csv")
-val_file   = os.path.join(root_dir, "val.csv")
-
-# create dir for save model & score
-model_dir = "models"
-if not os.path.exists(model_dir):
-    os.makedirs(model_dir)
-score_dir = "scores"
-if not os.path.exists(score_dir):
-    os.makedirs(score_dir)
-
 h, w, c    = 720, 960, 3
 n_class    = 32
 
 batch_size = 14
-epochs     = 300
+epochs     = 500
 lr         = 1e-4
 momentum   = 0
-w_decay    = 1e-4
-configs    = "FCNs_batch{}_epoch{}_RMSprop_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, lr, momentum, w_decay)
+w_decay    = 5e-5
+step_size  = 30
+gamma      = 0.5
+configs    = "FCNs_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
+print("Configs:", configs)
+
+root_dir   = "CamVid/"
+train_file = os.path.join(root_dir, "train.csv")
+val_file   = os.path.join(root_dir, "val.csv")
+
+# create dir for model
+model_dir = "models"
+if not os.path.exists(model_dir):
+    os.makedirs(model_dir)
 
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
@@ -57,12 +60,20 @@ if use_gpu:
 
 criterion = nn.BCELoss()
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
-scores = np.zeros((epochs, n_class))
+# create dir for score
+score_dir = os.path.join("scores", configs)
+if not os.path.exists(score_dir):
+    os.makedirs(score_dir)
+IU_scores    = np.zeros((epochs, n_class))
+pixel_scores = np.zeros(epochs)
 
 
 def train():
     for epoch in range(epochs):
+        scheduler.step()
+
         ts = time.time()
         for iter, batch in enumerate(train_loader):
             optimizer.zero_grad()
@@ -90,6 +101,7 @@ def train():
 def val(epoch):
     fcn_model.eval()
     total_ious = []
+    pixel_accs = []
     for iter, batch in enumerate(val_loader):
         if use_gpu:
             inputs = Variable(batch['X'].cuda())
@@ -103,16 +115,20 @@ def val(epoch):
         pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(h, w)
         target = batch['l'].cpu().numpy().reshape(h, w)
         total_ious.append(iou(pred, target))
+        pixel_accs.append(pixel_acc(pred, target))
 
     # Calculate average IoU
     total_ious = np.array(total_ious).T  # n_class * val_len
-    ious = total_ious.mean(axis=1)
-    print("epoch{}, meanIoU: {}, IoUs: {}".format(epoch, ious.mean(), ious))
-    scores[epoch] = ious
-    np.save(os.path.join(score_dir, configs), scores)
+    ious = np.nanmean(total_ious, axis=1)
+    pixel_accs = np.array(pixel_accs).mean()
+    print("epoch{}, pix_acc: {}, meanIoU: {}, IoUs: {}".format(epoch, pixel_accs, np.nanmean(ious), ious))
+    IU_scores[epoch] = ious
+    np.save(os.path.join(score_dir, "meanIU"), IU_scores)
+    pixel_scores[epoch] = pixel_accs
+    np.save(os.path.join(score_dir, "meanPixel"), pixel_scores)
 
 
-# borrow functions from https://github.com/Kaixhin/FCN-semantic-segmentation/blob/master/main.py
+# borrow functions and modify it from https://github.com/Kaixhin/FCN-semantic-segmentation/blob/master/main.py
 # Calculates class intersections over unions
 def iou(pred, target):
     ious = []
@@ -121,11 +137,20 @@ def iou(pred, target):
         target_inds = target == cls
         intersection = pred_inds[target_inds].sum()
         union = pred_inds.sum() + target_inds.sum() - intersection
-        ious.append(float(intersection) / max(union, 1))
+        if union == 0:
+            ious.append(float('nan'))  # if there is no ground truth, do not include in evaluation
+        else:
+            ious.append(float(intersection) / max(union, 1))
         # print("cls", cls, pred_inds.sum(), target_inds.sum(), intersection, float(intersection) / max(union, 1))
     return ious
 
 
+def pixel_acc(pred, target):
+    correct = (pred == target).sum()
+    total   = (target == target).sum()
+    return correct / total
+
+
 if __name__ == "__main__":
-    val(0)
+    val(0)  # show the accuracy before training
     train()

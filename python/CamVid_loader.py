@@ -18,8 +18,7 @@ root_dir   = "CamVid/"
 train_file = os.path.join(root_dir, "train.csv")  # img_name & label_name
 
 num_class = 32
-means     = (0.4368, 0.2475, 0.3281)
-stds      = (0.1681, 0.2247, 0.2743)
+means     = np.array([103.939, 116.779, 123.68]) / 255. # mean of three channels in the order of BGR
 h, w      = 720, 960
 crop_h    = int(int(h) / 32 * 32 * 2 / 3)
 crop_w    = int(int(w) / 32 * 32 * 2 / 3)
@@ -29,8 +28,7 @@ class CamVidDataset(Dataset):
 
     def __init__(self, csv_file, n_class=num_class, crop=True, flip_rate=0.5):
         self.data      = pd.read_csv(csv_file)
-        self.means     = means  # mean of three channels after divide to 255
-        self.stds      = stds   # std of three channels after divide to 255
+        self.means     = means
         self.n_class   = n_class
 
         self.crop      = crop
@@ -60,10 +58,11 @@ class CamVidDataset(Dataset):
 
         # convert to tensors
         h, w, _ = img.shape
+        img = img[:, :, ::-1]  # switch to BGR
         img = torch.from_numpy(img.copy()).permute(2, 0, 1).float().div(255)
-        img[0].sub_(self.means[0]).div_(self.stds[0])
-        img[1].sub_(self.means[1]).div_(self.stds[1])
-        img[2].sub_(self.means[2]).div_(self.stds[2])
+        img[0].sub_(self.means[0])
+        img[1].sub_(self.means[1])
+        img[2].sub_(self.means[2])
         label = torch.from_numpy(label.copy()).long()
 
         # create one-hot encoding
@@ -78,13 +77,13 @@ class CamVidDataset(Dataset):
 
 def show_batch(batch):
     img_batch = batch['X']
-    img_batch[:,0,...].mul_(stds[0]).add_(means[0])
-    img_batch[:,1,...].mul_(stds[1]).add_(means[1])
-    img_batch[:,2,...].mul_(stds[2]).add_(means[2])
+    img_batch[:,0,...].add_(means[0])
+    img_batch[:,1,...].add_(means[1])
+    img_batch[:,2,...].add_(means[2])
     batch_size = len(img_batch)
 
     grid = utils.make_grid(img_batch)
-    plt.imshow(grid.numpy().transpose((1, 2, 0)))
+    plt.imshow(grid.numpy()[::-1].transpose((1, 2, 0)))
 
     plt.title('Batch from dataloader')
 
@@ -98,7 +97,7 @@ if __name__ == "__main__":
         sample = train_data[i]
         print(i, sample['X'].size(), sample['Y'].size())
 
-    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
+    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
 
     for i, batch in enumerate(dataloader):
         print(i, batch['X'].size(), batch['Y'].size())

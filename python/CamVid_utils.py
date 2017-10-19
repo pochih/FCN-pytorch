@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -28,7 +29,7 @@ label2index = {}
 index2label = {}
 
 
-def divide_train_val(val_rate=0.01, shuffle=True, random_seed=None):
+def divide_train_val(val_rate=0.1, shuffle=True, random_seed=None):
     data_list   = os.listdir(data_dir)
     data_len    = len(data_list)
     val_len     = int(data_len * val_rate)
@@ -67,6 +68,7 @@ def divide_train_val(val_rate=0.01, shuffle=True, random_seed=None):
         lab_name = os.path.join(label_idx_dir, name)
         lab_name = lab_name.split(".")[0] + "_L.png.npy"
         t.write("{},{}\n".format(img_name, lab_name))
+
 
 def parse_label():
     # change label to class index
@@ -133,5 +135,5 @@ def imshow(img, title=None):
 
 
 if __name__ == '__main__':
-    divide_train_val()
+    divide_train_val(random_seed=1)
     parse_label()
