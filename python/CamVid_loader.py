@@ -15,26 +15,34 @@ from torchvision import utils
 
 
 root_dir   = "CamVid/"
-train_file = os.path.join(root_dir, "train.csv")  # img_name & label_name
+train_file = os.path.join(root_dir, "train.csv")
+val_file   = os.path.join(root_dir, "val.csv")
 
 num_class = 32
 means     = np.array([103.939, 116.779, 123.68]) / 255. # mean of three channels in the order of BGR
 h, w      = 720, 960
-crop_h    = int(int(h) / 32 * 32 * 2 / 3)
-crop_w    = int(int(w) / 32 * 32 * 2 / 3)
+train_h   = int(h * 2 / 3)  # 480
+train_w   = int(w * 2 / 3)  # 640
+val_h     = int(h/32) * 32  # 704
+val_w     = w               # 960
 
 
 class CamVidDataset(Dataset):
 
-    def __init__(self, csv_file, n_class=num_class, crop=True, flip_rate=0.5):
+    def __init__(self, csv_file, phase, n_class=num_class, crop=True, flip_rate=0.5):
         self.data      = pd.read_csv(csv_file)
         self.means     = means
         self.n_class   = n_class
 
-        self.crop      = crop
-        self.crop_h    = crop_h
-        self.crop_w    = crop_w
         self.flip_rate = flip_rate
+        self.crop      = crop
+        if phase == 'train':
+            self.new_h = train_h
+            self.new_w = train_w
+        elif phase == 'val':
+            self.new_h = val_h
+            self.new_w = val_w
+
 
     def __len__(self):
         return len(self.data)
@@ -47,10 +55,10 @@ class CamVidDataset(Dataset):
 
         if self.crop:
             h, w, _ = img.shape
-            top   = np.random.randint(0, h - self.crop_h)
-            left  = np.random.randint(0, w - self.crop_w)
-            img   = img[top:top + self.crop_h, left:left + self.crop_w]
-            label = label[top:top + self.crop_h, left:left + self.crop_w]
+            top   = random.randint(0, h - self.new_h)
+            left  = random.randint(0, w - self.new_w)
+            img   = img[top:top + self.new_h, left:left + self.new_w]
+            label = label[top:top + self.new_h, left:left + self.new_w]
 
         if random.random() < self.flip_rate:
             img   = np.fliplr(img)
@@ -89,7 +97,7 @@ def show_batch(batch):
 
 
 if __name__ == "__main__":
-    train_data = CamVidDataset(csv_file=train_file)
+    train_data = CamVidDataset(csv_file=train_file, phase='train')
 
     # show a batch
     batch_size = 4

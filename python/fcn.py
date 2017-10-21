@@ -26,10 +26,7 @@ class FCN32s(nn.Module):
         self.bn4     = nn.BatchNorm2d(64)
         self.deconv5 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, dilation=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(32)
-        self.classifier = nn.Sequential(
-                            nn.Conv2d(32, classes, kernel_size=1),
-                            nn.Sigmoid())
-        #self.upsample = nn.ConvTranspose2d(512, 512, kernel_size=2, stride=2)
+        self.classifier = nn.Conv2d(32, classes, kernel_size=1)
 
     def forward(self, x):
         output = self.pretrained_net(x)
@@ -62,9 +59,7 @@ class FCN16s(nn.Module):
         self.bn4     = nn.BatchNorm2d(64)
         self.deconv5 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, dilation=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(32)
-        self.classifier = nn.Sequential(
-                            nn.Conv2d(32, classes, kernel_size=1),
-                            nn.Sigmoid())
+        self.classifier = nn.Conv2d(32, classes, kernel_size=1)
 
     def forward(self, x):
         output = self.pretrained_net(x)
@@ -99,9 +94,7 @@ class FCN8s(nn.Module):
         self.bn4     = nn.BatchNorm2d(64)
         self.deconv5 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, dilation=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(32)
-        self.classifier = nn.Sequential(
-                            nn.Conv2d(32, classes, kernel_size=1),
-                            nn.Sigmoid())
+        self.classifier = nn.Conv2d(32, classes, kernel_size=1)
 
     def forward(self, x):
         output = self.pretrained_net(x)
@@ -138,9 +131,8 @@ class FCNs(nn.Module):
         self.bn4     = nn.BatchNorm2d(64)
         self.deconv5 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, dilation=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(32)
-        self.classifier = nn.Sequential(
-                            nn.Conv2d(32, classes, kernel_size=1),
-                            nn.Sigmoid())
+        self.classifier = nn.Conv2d(32, classes, kernel_size=1)
+        #self.upsample = nn.ConvTranspose2d(512, 512, kernel_size=2, stride=2)
 
     def forward(self, x):
         output = self.pretrained_net(x)

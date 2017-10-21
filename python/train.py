@@ -21,14 +21,14 @@ import os
 h, w, c    = 720, 960, 3
 n_class    = 32
 
-batch_size = 14
+batch_size = 10
 epochs     = 500
 lr         = 1e-4
 momentum   = 0
-w_decay    = 5e-5
-step_size  = 30
+w_decay    = 1e-5
+step_size  = 50
 gamma      = 0.5
-configs    = "FCNs_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
+configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
 root_dir   = "CamVid/"
@@ -43,10 +43,10 @@ if not os.path.exists(model_dir):
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
 
-train_data   = CamVidDataset(csv_file=train_file)
+train_data   = CamVidDataset(csv_file=train_file, phase='train')
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
 
-val_data   = CamVidDataset(csv_file=val_file)
+val_data   = CamVidDataset(csv_file=val_file, phase='val', flip_rate=0)
 val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True)
@@ -58,7 +58,7 @@ if use_gpu:
     fcn_model = nn.DataParallel(fcn_model, device_ids=num_gpu)
     print("Finish cuda loading, time elapsed {}".format(time.time() - ts))
 
-criterion = nn.BCELoss()
+criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.RMSprop(fcn_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
