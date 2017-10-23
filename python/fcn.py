@@ -157,7 +157,7 @@ class FCNs(nn.Module):
 
 
 class VGGNet(VGG):
-    def __init__(self, pretrained=True, requires_grad=True, show_params=False):
+    def __init__(self, pretrained=True, requires_grad=True, remove_fc=False, show_params=False):
         super().__init__(make_layers(cfg['E']))
 
         if pretrained:
@@ -166,6 +166,9 @@ class VGGNet(VGG):
         if not requires_grad:
             for param in super().parameters():
                 param.requires_grad = False
+
+        if remove_fc:  # delete redundant params, can save memory
+            del self.classifier
 
         if show_params:
             for name, param in self.named_parameters():

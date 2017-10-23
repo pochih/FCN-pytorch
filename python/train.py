@@ -10,6 +10,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from fcn import VGGNet, FCN32s, FCN16s, FCN8s, FCNs
+from Cityscapes_loader import CityscapesDataset
 from CamVid_loader import CamVidDataset
 
 from matplotlib import pyplot as plt
@@ -18,10 +19,9 @@ import time
 import os
 
 
-h, w, c    = 720, 960, 3
-n_class    = 32
+n_class    = 20
 
-batch_size = 10
+batch_size = 6
 epochs     = 500
 lr         = 1e-4
 momentum   = 0
@@ -31,7 +31,7 @@ gamma      = 0.5
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
-root_dir   = "CamVid/"
+root_dir   = "Cityscapes/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
@@ -39,18 +39,20 @@ val_file   = os.path.join(root_dir, "val.csv")
 model_dir = "models"
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+model_path = os.path.join(model_dir, configs)
 
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
 
-train_data   = CamVidDataset(csv_file=train_file, phase='train')
+train_data   = CityscapesDataset(csv_file=train_file, phase='train')
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
 
-val_data   = CamVidDataset(csv_file=val_file, phase='val', flip_rate=0)
+val_data   = CityscapesDataset(csv_file=val_file, phase='val', flip_rate=0)
 val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
-vgg_model = VGGNet(requires_grad=True)
+vgg_model = VGGNet(requires_grad=True, remove_fc=True)
 fcn_model = FCNs(pretrained_net=vgg_model, classes=n_class)
+
 if use_gpu:
     ts = time.time()
     vgg_model = vgg_model.cuda()
@@ -93,7 +95,7 @@ def train():
                 print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.data[0]))
         
         print("Finish epoch {}, time elapsed {}".format(epoch, time.time() - ts))
-        torch.save(fcn_model.state_dict(), os.path.join(model_dir, configs))
+        torch.save(fcn_model, model_path)
 
         val(epoch)
 
@@ -111,11 +113,12 @@ def val(epoch):
         output = fcn_model(inputs)
         output = output.data.cpu().numpy()
 
-        _, _, h, w = output.shape
-        pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(h, w)
-        target = batch['l'].cpu().numpy().reshape(h, w)
-        total_ious.append(iou(pred, target))
-        pixel_accs.append(pixel_acc(pred, target))
+        N, _, h, w = output.shape
+        pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
+        target = batch['l'].cpu().numpy().reshape(N, h, w)
+        for p, t in zip(pred, target):
+            total_ious.append(iou(p, t))
+            pixel_accs.append(pixel_acc(p, t))
 
     # Calculate average IoU
     total_ious = np.array(total_ious).T  # n_class * val_len
