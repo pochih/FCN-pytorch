@@ -133,6 +133,7 @@ def parse_label():
                         except:
                             # no index, assign to void
                             idx_mat[h, w] = 19
+                idx_mat = idx_mat.astype(np.uint8)
                 np.save(lab_name, idx_mat)
                 print("Finish %s" % (filename))
 

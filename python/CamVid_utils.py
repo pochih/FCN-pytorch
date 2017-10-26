@@ -17,6 +17,8 @@ root_dir          = "CamVid/"
 data_dir          = os.path.join(root_dir, "701_StillsRaw_full")    # train data
 label_dir         = os.path.join(root_dir, "LabeledApproved_full")  # train label
 label_colors_file = os.path.join(root_dir, "label_colors.txt")      # color to label
+val_label_file    = os.path.join(root_dir, "val.csv")               # validation file
+train_label_file  = os.path.join(root_dir, "train.csv")             # train file
 
 # create dir for label index
 label_idx_dir = os.path.join(root_dir, "Labeled_idx")
@@ -46,7 +48,6 @@ def divide_train_val(val_rate=0.1, shuffle=True, random_seed=None):
     train_idx   = [data_list[i] for i in data_idx[val_len:]]
 
     # create val.csv
-    val_label_file = os.path.join(root_dir, "val.csv")
     v = open(val_label_file, "w")
     v.write("img,label\n")
     for idx, name in enumerate(val_idx):
@@ -58,7 +59,6 @@ def divide_train_val(val_rate=0.1, shuffle=True, random_seed=None):
         v.write("{},{}\n".format(img_name, lab_name))
 
     # create train.csv
-    train_label_file = os.path.join(root_dir, "train.csv")
     t = open(train_label_file, "w")
     t.write("img,label\n")
     for idx, name in enumerate(train_idx):
@@ -107,6 +107,7 @@ def parse_label():
                     idx_mat[h, w] = index
                 except:
                     print("error: img:%s, h:%d, w:%d" % (name, h, w))
+        idx_mat = idx_mat.astype(np.uint8)
         np.save(filename, idx_mat)
         print("Finish %s" % (name))
 
