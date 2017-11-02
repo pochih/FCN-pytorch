@@ -14,7 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
 
 
-root_dir   = "Cityscapes/"
+root_dir   = "CityScapes/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
@@ -27,9 +27,9 @@ val_h     = h  # 1024
 val_w     = w  # 2048
 
 
-class CityscapesDataset(Dataset):
+class CityScapesDataset(Dataset):
 
-    def __init__(self, csv_file, phase, n_class=num_class, crop=True, flip_rate=0.5):
+    def __init__(self, csv_file, phase, n_class=num_class, crop=False, flip_rate=0.):
         self.data      = pd.read_csv(csv_file)
         self.means     = means
         self.n_class   = n_class
@@ -37,12 +37,10 @@ class CityscapesDataset(Dataset):
         self.flip_rate = flip_rate
         self.crop      = crop
         if phase == 'train':
+            self.crop = True
+            self.flip_rate = 0.5
             self.new_h = train_h
             self.new_w = train_w
-        elif phase == 'val':
-            self.new_h = val_h
-            self.new_w = val_w
-
 
     def __len__(self):
         return len(self.data)
@@ -64,16 +62,19 @@ class CityscapesDataset(Dataset):
             img   = np.fliplr(img)
             label = np.fliplr(label)
 
-        # convert to tensors
-        h, w, _ = img.shape
+        # reduce mean
         img = img[:, :, ::-1]  # switch to BGR
-        img = torch.from_numpy(img.copy()).permute(2, 0, 1).float().div(255)
-        img[0].sub_(self.means[0])
-        img[1].sub_(self.means[1])
-        img[2].sub_(self.means[2])
+        img = np.transpose(img, (2, 0, 1)) / 255.
+        img[0] -= self.means[0]
+        img[1] -= self.means[1]
+        img[2] -= self.means[2]
+
+        # convert to tensor
+        img = torch.from_numpy(img.copy()).float()
         label = torch.from_numpy(label.copy()).long()
 
         # create one-hot encoding
+        h, w = label.size()
         target = torch.zeros(self.n_class, h, w)
         for c in range(self.n_class):
             target[c][label == c] = 1
@@ -97,7 +98,7 @@ def show_batch(batch):
 
 
 if __name__ == "__main__":
-    train_data = CityscapesDataset(csv_file=train_file, phase='train')
+    train_data = CityScapesDataset(csv_file=train_file, phase='train')
 
     # show a batch
     batch_size = 4

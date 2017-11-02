@@ -64,16 +64,19 @@ class CamVidDataset(Dataset):
             img   = np.fliplr(img)
             label = np.fliplr(label)
 
-        # convert to tensors
-        h, w, _ = img.shape
+        # reduce mean
         img = img[:, :, ::-1]  # switch to BGR
-        img = torch.from_numpy(img.copy()).permute(2, 0, 1).float().div(255)
-        img[0].sub_(self.means[0])
-        img[1].sub_(self.means[1])
-        img[2].sub_(self.means[2])
+        img = np.transpose(img, (2, 0, 1)) / 255.
+        img[0] -= self.means[0]
+        img[1] -= self.means[1]
+        img[2] -= self.means[2]
+
+        # convert to tensor
+        img = torch.from_numpy(img.copy()).float()
         label = torch.from_numpy(label.copy()).long()
 
         # create one-hot encoding
+        h, w = label.size()
         target = torch.zeros(self.n_class, h, w)
         for c in range(self.n_class):
             target[c][label == c] = 1
