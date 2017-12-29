@@ -15,3 +15,7 @@ bash script/install_packages.sh
 ```python
 python3 python/train.py
 ```
+pixel accuracy is better than 90%
+
+## Author
+Po-Chih Huang / [@brianhuang1019](http://brianhuang1019.github.io/)
