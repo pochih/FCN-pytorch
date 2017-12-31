@@ -17,7 +17,10 @@ bash script/install_packages.sh
 ```python
 python3 python/train.py
 ```
-pixel accuracy is better than 90%
+
+I train with two popular dataset: CamVid and Cityscapes
+
+pixel accuracy are both better than 90%
 
 ## Author
 Po-Chih Huang / [@brianhuang1019](http://brianhuang1019.github.io/)
