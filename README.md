@@ -11,10 +11,10 @@
 ### performance
 I train with two popular benchmark dataset: CamVid and Cityscapes
 
-|dataset|pixel accuracy|
-|---|---
-|CamVid|> 90%
-|Cityscapes|> 90%
+|dataset|n_class|pixel accuracy|
+|---|---|---
+|CamVid|32|>90%
+|Cityscapes|20|>90%
 
 ### install package
 ```bash
@@ -26,7 +26,15 @@ and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 and download CamVid dataset or Cityscapes dataset
 
 ### training
+- for CamVid
 ```python
+python3 python/CamVid_utils.py 
+python3 python/train.py
+```
+
+- for CityScapes
+```python
+python3 python/CityScapes_utils.py 
 python3 python/train.py
 ```
 
