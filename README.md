@@ -6,6 +6,8 @@
 
 - It's a very important task for automated driving
 
+- The model is based on CVPR2015 best paper [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038)
+
 ### performance
 I train with two popular benchmark dataset: CamVid and Cityscapes
 
