@@ -1,11 +1,10 @@
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source-150x25.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
-## 🚘 The simplest implementation of fully convolutional networks
+## 🚘 The easiest implementation of fully convolutional networks
 
+- Task: __semantic segmentation__
 
-- *Task: semantic segmentation*
-
-- *It's a very important task for automated driving*
+- It's a very important task for automated driving
 
 ### performance
 I train with two popular benchmark dataset: CamVid and Cityscapes
