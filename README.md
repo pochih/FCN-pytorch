@@ -17,8 +17,10 @@ I train with two popular benchmark dataset: CamVid and Cityscapes
 
 ### install package
 ```bash
-bash script/install_packages.sh
+pip3 install -r requirements.txt
 ```
+
+and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 
 ### training
 ```python
