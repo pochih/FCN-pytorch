@@ -51,7 +51,7 @@ val_data   = CityscapesDataset(csv_file=val_file, phase='val', flip_rate=0)
 val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
-fcn_model = FCNs(pretrained_net=vgg_model, classes=n_class)
+fcn_model = FCNs(pretrained_net=vgg_model, n_class=n_class)
 
 if use_gpu:
     ts = time.time()
@@ -115,6 +115,8 @@ def val(epoch):
 
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
+        np.save('tmp/{}'.format(iter), pred[0])
+
         target = batch['l'].cpu().numpy().reshape(N, h, w)
         for p, t in zip(pred, target):
             total_ious.append(iou(p, t))
