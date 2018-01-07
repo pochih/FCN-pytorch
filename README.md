@@ -3,10 +3,17 @@
 ## 🚘🚘🚘 Fully Convolutional Networks for Semantic Segmentation
 
 
-*Task: semantic segmentation*
+- *Task: semantic segmentation*
 
-*It's a very important task for automated driving*
+- *It's a very important task for automated driving*
 
+### performance
+I train with two popular benchmark dataset: CamVid and Cityscapes
+
+|dataset|pixel accuracy|
+|---|---
+|CamVid|> 90%
+|Cityscapes|> 90%
 
 ### install package
 ```bash
@@ -17,10 +24,6 @@ bash script/install_packages.sh
 ```python
 python3 python/train.py
 ```
-
-I train with two popular dataset: CamVid and Cityscapes
-
-pixel accuracy are both better than 90%
 
 ## Author
 Po-Chih Huang / [@brianhuang1019](http://brianhuang1019.github.io/)
