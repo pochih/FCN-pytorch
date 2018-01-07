@@ -13,8 +13,8 @@ I train with two popular benchmark dataset: CamVid and Cityscapes
 
 |dataset|n_class|pixel accuracy|
 |---|---|---
-|CamVid|32|>90%
 |Cityscapes|20|>90%
+|CamVid|32|>90%
 
 ### install package
 ```bash
@@ -23,16 +23,10 @@ pip3 install -r requirements.txt
 
 and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 
-and download CamVid dataset or Cityscapes dataset
+and download Cityscapes dataset (recommended) or CamVid dataset
 
 ### training
-- for CamVid
-```python
-python3 python/CamVid_utils.py 
-python3 python/train.py
-```
-
-- for CityScapes
+- default dataset is CityScapes
 ```python
 python3 python/CityScapes_utils.py 
 python3 python/train.py
