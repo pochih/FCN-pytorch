@@ -23,6 +23,8 @@ pip3 install -r requirements.txt
 
 and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 
+and download CamVid dataset or Cityscapes dataset
+
 ### training
 ```python
 python3 python/train.py
