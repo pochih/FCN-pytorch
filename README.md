@@ -9,6 +9,11 @@
 - The model is based on CVPR2015 best paper [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038)
 
 ### performance
+
+<img align='center' style="border-color:gray;border-width:2px;border-style:dashed"   src='result/trials.png' padding='5px' height="250px"></img>
+
+<img align='center' style="border-color:gray;border-width:2px;border-style:dashed"   src='result/result.gif' padding='5px' height="250px"></img>
+
 I train with two popular benchmark dataset: CamVid and Cityscapes
 
 |dataset|n_class|pixel accuracy|
