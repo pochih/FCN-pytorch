@@ -37,5 +37,11 @@ python3 python/CityScapes_utils.py
 python3 python/train.py
 ```
 
+- or train with CamVid
+```python
+python3 python/CamVid_utils.py 
+python3 python/train.py
+```
+
 ## Author
 Po-Chih Huang / [@brianhuang1019](http://brianhuang1019.github.io/)
