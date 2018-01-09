@@ -6,12 +6,15 @@
 
 - The model is based on CVPR2015 best paper [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038)
 
+## Results
+### Trials
 <img align='center' style="border-color:gray;border-width:2px;border-style:dashed"   src='result/trials.png' padding='5px' height="150px"></img>
 
+### Predictions
 <img align='center' style="border-color:gray;border-width:2px;border-style:dashed"   src='result/result.gif' padding='5px' height="150px"></img>
 
 
-### performance
+## Performance
 
 I train with two popular benchmark dataset: CamVid and Cityscapes
 
@@ -20,7 +23,9 @@ I train with two popular benchmark dataset: CamVid and Cityscapes
 |Cityscapes|20|>90%
 |CamVid|32|>90%
 
-### install package
+## Training
+
+### Install packages
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -29,7 +34,7 @@ and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 
 and download Cityscapes dataset (recommended) or CamVid dataset
 
-### training
+### Run the code
 - default dataset is CityScapes
 ```python
 python3 python/CityScapes_utils.py 
