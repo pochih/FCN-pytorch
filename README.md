@@ -20,8 +20,8 @@ I train with two popular benchmark dataset: CamVid and Cityscapes
 
 |dataset|n_class|pixel accuracy|
 |---|---|---
-|Cityscapes|20|>90%
-|CamVid|32|>90%
+|Cityscapes|20|96%
+|CamVid|32|93%
 
 ## Training
 
