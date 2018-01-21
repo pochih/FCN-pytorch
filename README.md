@@ -32,19 +32,23 @@ pip3 install -r requirements.txt
 
 and download pytorch 0.2.0 from [pytorch.org](pytorch.org)
 
-and download Cityscapes dataset (recommended) or CamVid dataset
+and download [CamVid](http://mi.eng.cam.ac.uk/research/projects/VideoRec/CamVid/) dataset (recommended) or [Cityscapes](https://www.cityscapes-dataset.com/) dataset
 
 ### Run the code
-- default dataset is CityScapes
-```python
-python3 python/CityScapes_utils.py 
-python3 python/train.py CityScapes
-```
+- default dataset is CamVid
 
-- or train with CamVid
+create a directory named "CamVid", and put data into it, then run python codes:
 ```python
 python3 python/CamVid_utils.py 
 python3 python/train.py CamVid
+```
+
+- or train with CityScapes
+
+create a directory named "CityScapes", and put data into it, then run python codes:
+```python
+python3 python/CityScapes_utils.py 
+python3 python/train.py CityScapes
 ```
 
 ## Author
