@@ -44,7 +44,7 @@ python3 python/train.py
 - or train with CamVid
 ```python
 python3 python/CamVid_utils.py 
-python3 python/train.py
+python3 python/train_CamVid.py
 ```
 
 ## Author
