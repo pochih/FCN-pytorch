@@ -38,13 +38,13 @@ and download Cityscapes dataset (recommended) or CamVid dataset
 - default dataset is CityScapes
 ```python
 python3 python/CityScapes_utils.py 
-python3 python/train.py
+python3 python/train.py CityScapes
 ```
 
 - or train with CamVid
 ```python
 python3 python/CamVid_utils.py 
-python3 python/train_CamVid.py
+python3 python/train.py CamVid
 ```
 
 ## Author
