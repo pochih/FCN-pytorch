@@ -16,6 +16,7 @@ from CamVid_loader import CamVidDataset
 from matplotlib import pyplot as plt
 import numpy as np
 import time
+import sys
 import os
 
 
@@ -31,7 +32,10 @@ gamma      = 0.5
 configs    = "FCNs-BCEWithLogits_batch{}_epoch{}_RMSprop_scheduler-step{}-gamma{}_lr{}_momentum{}_w_decay{}".format(batch_size, epochs, step_size, gamma, lr, momentum, w_decay)
 print("Configs:", configs)
 
-root_dir   = "Cityscapes/"
+if sys.argv[1] == 'CamVid':
+    root_dir   = "CamVid/"
+else
+    root_dir   = "Cityscapes/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
@@ -44,10 +48,16 @@ model_path = os.path.join(model_dir, configs)
 use_gpu = torch.cuda.is_available()
 num_gpu = list(range(torch.cuda.device_count()))
 
-train_data   = CityscapesDataset(csv_file=train_file, phase='train')
+if sys.argv[1] == 'CamVid':
+    train_data = CamVidDataset(csv_file=train_file, phase='train')
+else:
+    train_data = CityscapesDataset(csv_file=train_file, phase='train')
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
 
-val_data   = CityscapesDataset(csv_file=val_file, phase='val', flip_rate=0)
+if sys.argv[1] == 'CamVid':
+    val_data = CamVidDataset(csv_file=val_file, phase='val', flip_rate=0)
+else:
+    val_data = CityscapesDataset(csv_file=val_file, phase='val', flip_rate=0)
 val_loader = DataLoader(val_data, batch_size=1, num_workers=8)
 
 vgg_model = VGGNet(requires_grad=True, remove_fc=True)
@@ -115,7 +125,6 @@ def val(epoch):
 
         N, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(N, h, w)
-        np.save('tmp/{}'.format(iter), pred[0])
 
         target = batch['l'].cpu().numpy().reshape(N, h, w)
         for p, t in zip(pred, target):
