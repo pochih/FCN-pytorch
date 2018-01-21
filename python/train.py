@@ -35,7 +35,7 @@ print("Configs:", configs)
 if sys.argv[1] == 'CamVid':
     root_dir   = "CamVid/"
 else
-    root_dir   = "Cityscapes/"
+    root_dir   = "CityScapes/"
 train_file = os.path.join(root_dir, "train.csv")
 val_file   = os.path.join(root_dir, "val.csv")
 
