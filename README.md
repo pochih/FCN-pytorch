@@ -36,12 +36,16 @@ and download Cityscapes dataset (recommended) or CamVid dataset
 
 ### Run the code
 - default dataset is CityScapes
+
+create a directory named "CityScapes", and put data into it, then run python codes:
 ```python
 python3 python/CityScapes_utils.py 
 python3 python/train.py CityScapes
 ```
 
 - or train with CamVid
+
+create a directory named "CamVid", and put data into it, then run python codes:
 ```python
 python3 python/CamVid_utils.py 
 python3 python/train.py CamVid
