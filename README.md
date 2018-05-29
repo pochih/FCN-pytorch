@@ -4,7 +4,7 @@
 
 - Task: __semantic segmentation__, it's a very important task for automated driving
 
-- The model is based on CVPR2015 best paper [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038)
+- The model is based on CVPR 15' best paper honorable mentioned [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038)
 
 ## Results
 ### Trials
@@ -52,4 +52,4 @@ python3 python/train.py CityScapes
 ```
 
 ## Author
-Po-Chih Huang / [@brianhuang1019](http://brianhuang1019.github.io/)
+Po-Chih Huang / [@pochih](https://pochih.github.io/)
