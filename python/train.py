@@ -84,6 +84,7 @@ pixel_scores = np.zeros(epochs)
 
 def train():
     for epoch in range(epochs):
+        fcn_model.train()
         scheduler.step()
 
         ts = time.time()
