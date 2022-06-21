@@ -1,4 +1,4 @@
 matplotlib==2.0.2
-numpy==1.13.3
+numpy==1.22.0
 scipy==0.19.1
 torchvision==0.1.9
